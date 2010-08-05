@@ -8,6 +8,15 @@
        #######   ###   ######  #    #   #####    ###     ###     ###
 =============================================================================
 
+##########################################################################
+##				NOTE					##
+##  This project died a while ago					##
+##  I'm trying to put new life in to this by making it work again	##
+##  on the newer linux versions. 					##
+##  Pieter Maes - <maescool@gmail.com>					##
+##									##
+##########################################################################
+
 These are the sources to build a Linux C library that provides
 the same functions to interface with a Velleman K8000 board as
 the Velleman supplied routines.
@@ -19,13 +28,6 @@ direct parallel interface can be used.
 
 1. Build and install.
 =====================
-Rpm's are available at http://struyve.mine.nu:8080/index.php?block=k8000 ,
-and installation is pretty straightforward.
-
-As root, do:
-
-	$ rpm -U libk8000-<version>.rpm
-
 To build k8000 library from sourcecode do:
 
 	$ tar -zxvf libk8000-<version>.tar.gz
@@ -324,4 +326,4 @@ Please send questions, bugs and money to:
 joris@struyve.be http://struyve.mine.nu:8080/pageloader.pl?block=k8000
 hihihi@wanadoo.nl http://home.wanadoo.nl/hihihi/
 ben0it@wanadoo.fr http://perso.wanadoo.fr/2oo2/k8housealarm
-
+maescool@gmail.com

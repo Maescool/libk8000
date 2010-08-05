@@ -1,6 +1,6 @@
 ####### k8000 makefile
 REL := 2.2.0
-KDIR=/lib/modules/2.6.7-adeos/build
+KDIR=/lib/modules/`uname -r`/build
 PWD:= $(shell pwd)
 MAKEFLAGS=-f Makefile.shit
 obj-m += mod_k8000.o

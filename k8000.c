@@ -50,7 +50,7 @@
   #include <unistd.h>
   #include <sys/ioctl.h>
   #include <fcntl.h>
-  #include <linux/i2c.h>
+  #include <linux/i2c-dev.h>
 
   #define MUTEX_LPT0 4567
   #define MUTEX_LPT1 4568
@@ -171,9 +171,6 @@ int post_I2CbusDelay = 35;
 int autoioperm=1;
 int activechainnumber=0;
 
-#ifdef __KERNEL__
-	MODULE_PARM(debug,"i");
-#endif
 
 /* Function pointer declarations */
 void (*I2cSendData)(byte addr, byte *data, int len)=NULL;
