@@ -1,0 +1,327 @@
+=============================================================================
+       #         ###   ######  #    #   #####    ###     ###     ###
+       #          #    #     # #   #   #     #  #   #   #   #   #   #
+       #          #    #     # #  #    #     # #     # #     # #     #
+       #          #    ######  ###      #####  #     # #     # #     #
+       #          #    #     # #  #    #     # #     # #     # #     #
+       #          #    #     # #   #   #     #  #   #   #   #   #   #
+       #######   ###   ######  #    #   #####    ###     ###     ###
+=============================================================================
+
+These are the sources to build a Linux C library that provides
+the same functions to interface with a Velleman K8000 board as
+the Velleman supplied routines.
+Plus new extentions. Like Chains. And the use of the I2C Kernel Device.
+
+From this source, you can build a normal library and/or a kernel module to
+provide the functions in kernel space. When using the kernel module, only the
+direct parallel interface can be used.
+
+1. Build and install.
+=====================
+Rpm's are available at http://struyve.mine.nu:8080/index.php?block=k8000 ,
+and installation is pretty straightforward.
+
+As root, do:
+
+	$ rpm -U libk8000-<version>.rpm
+
+To build k8000 library from sourcecode do:
+
+	$ tar -zxvf libk8000-<version>.tar.gz
+	$ cd libk8000
+	$ make
+
+If you intend to use libk8000 from kernel space, you must also build libk8000
+as a kernel module. These makefiles are mot very well tested. You will have to
+modify these to fit your environment.
+
+	$ make -f Makefile-mod-2.4 # build a 2.4 kernel module
+	$ make -f Makefile-mod-2.6 # build a 2.6 kernel module
+	$ make -f Makefile-mod-2.4-mpc860 # build a mpc860 2.4 kernel module
+
+To install the k8000 libraries (in /usr/lib) and header file
+(in /usr/include) do (as root):
+
+	$ make install
+
+The source tarball includes some demos that show how to use the libk8000. To
+Compile these demos:
+
+	$ make demos
+
+2. Use the libraries.
+=====================
+
+2.1. General.
+-------------
+Once installed, you can link your program by using the '-lk8000'
+option (same for C++). Also, do '#include <k8000.h>'
+to use the correct prototypes.
+
+Because of compiler issues, you must compile with at least the -02
+optimizer option.
+
+	$ gcc -03 my_prog.c -o my_prog -lk8000
+
+Two functions are provided to enable or disable errors and debug output.
+SetDebug(int) will enable or disable debug output. SetPrintError(int) 
+enables or disables the output of errors to stderr.
+
+2.2 Extentions to the Velleman supplied library.
+------------------------------------------------
+
+2.2.1 Ioperm.
+-------------
+These libraries provide the same functions as the Velleman library, but also
+have some extras. Normally under Linux you must cal ioperm() before using the
+parallel port from a user-space program. In your program, you have the choice
+to call ioperm() yourself, or let the library call it for you.
+The SelectI2CprinterPort function can set the permissions for you on the
+selected printer port, and returns non zero uppon failure. I you want to
+disable this feature, you can call SetAutoPerm(int) with a zero value as
+argument. Ioperm() still must be done with root privileges, so you must run
+your program as root or setuid root.
+
+Example:
+
+- Let libk8000 do the ioperm call
+
+.....
+if(SelectI2CprinterPort(1))
+{
+	printf("Must run as root\n");
+	exit(1);
+}
+.....
+
+
+- Call ioperm yourself
+
+.....
+SetAutoPerm(0);
+if(ioperm(0x378, 3, 1));
+{
+	printf("Must run as root\n");
+	exit(1);
+}
+SelectI2CprinterPort(1);
+.....
+
+2.2.2 Interprocess Mutex locks.
+------------------------------_
+When 2 or more processes are bit-banging the same port, things can get mixed up,
+and weird things start to happen. As from libk8000 release 2.1.x you can 
+instruct the libk8000 routines to use a mutex to serialize access to the 
+printer ports.
+You can enable (or disable) this locking at any time like this:
+
+/* enable the use of mutexes */
+SetMutexlock(1);
+
+/* disable the use of mutexes */
+SetMutexlock(0);
+
+When you program crashes before unlocking the mutex, things may get stuck. 
+You must then remove the mutexes yourself like this:
+
+[js@hercules js]$ ipcs
+...
+------ Semaphore Arrays --------
+key        semid      owner      perms      nsems      status      
+0x000011d7 294912     root      666        1         
+0x000011d8 327681     root      666        1         
+0x000011d9 360450     root      666        1         
+[js@hercules js]$ ipcrm sem 294912 327681 360450
+
+After they are removed, you can restart your program, and the mutex semaphores
+will be recreated when calling SetMutexlock(1).
+The use of mutexes is disabled by default.
+
+2.2.3 Multiple master-slave chains.
+-----------------------------------	
+With a standard parallel cable you can chain one 'master' K8000 board
+and 3 'slave' K8000 boards together. However, a parallel port has 25 pins
+and by using other pins, you can have more master-slave chains on one
+parallel port.  The /dev/velleman interface (for now) only supports 1 chain.
+
+The IO array that contains the status of the IO's is still available
+but with multiple chains, you must use the IO_matrix two dimensional
+array to get the status of the IO on another chain. The old IO array is
+now just a pointer to the first chain.
+
+They are defined like this:
+short IO_matrix[MaxChains][MaxIOchannel+1];
+short *IO = IO_matrix[0];
+
+So in you code IO[23] is the same as IO_matrix[0][23].
+
+The same is true for the following array's:
+short *IOconfig = IOconfig_matrix[0];
+short *IOdata = IOdata_matrix[0];
+short *IO = IO_matrix[0];
+short *DAC = DAC_matrix[0];
+short *AD = AD_matrix[0];
+short *DA = DA_matrix[0];
+
+According to Kris Wauters, this is the pin assignment for the 5 chains:
+OUT = from PC to K8000
+IN  = from K8000 to PC
+Chain 0 is the default. A '!' before the bit means that bit is reversed.
+
+-----------------------------------------------------
+| Chain 0 |   Signal  |  Pin  |  bit  |     Port    |
+-----------------------------------------------------
+          |    SCL    |  17   |  !3   | controlport |
+          -------------------------------------------
+          |   SDA IN  |  13   |   4   |  statusport |
+          -------------------------------------------
+          |   SDA OUT |  14   |  !1   | controlport |
+          -------------------------------------------
+
+-----------------------------------------------------
+| Chain 1 |   Signal  |  Pin  |  bit  |     Port    |
+-----------------------------------------------------
+          |    SCL    |   2   |   0   |   dataport  |
+          -------------------------------------------
+          |   SDA IN  |  10   |  !6   |  statusport |
+          -------------------------------------------
+          |   SDA OUT |   1   |  !0   | controlport |
+          -------------------------------------------
+
+-----------------------------------------------------
+| Chain 2 |   Signal  |  Pin  |  bit  |     Port    |
+-----------------------------------------------------
+          |    SCL    |   4   |   2   |   dataport  |
+          -------------------------------------------
+          |   SDA IN  |  11   |   7   |  statusport |
+          -------------------------------------------
+          |   SDA OUT |   3   |   1   |   dataport  |
+          -------------------------------------------
+
+-----------------------------------------------------
+| Chain 3 |   Signal  |  Pin  |  bit  |     Port    |
+-----------------------------------------------------
+          |    SCL    |   6   |   4   |   dataport  |
+          -------------------------------------------
+          |   SDA IN  |  12   |   5   |  statusport |
+          -------------------------------------------
+          |   SDA OUT |   5   |   3   |   dataport  |
+          -------------------------------------------
+
+-----------------------------------------------------
+| Chain 4 |   Signal  |  Pin  |  bit  |     Port    |
+-----------------------------------------------------
+          |    SCL    |   8   |   6   |   dataport  |
+          -------------------------------------------
+          |   SDA IN  |  15   |  !3   |  statusport |
+          -------------------------------------------
+          |   SDA OUT |   7   |   5   |   dataport  |
+          -------------------------------------------
+
+By default, chain 0 is active. You can switch between chains using the
+SelectChain(int chain_no) function. S
+
+Example:
+.....
+if(SelectI2CprinterPort(1))
+{
+	printf("Must run as root\n");
+	exit(1);
+}
+I2CBusNotBusy();
+ConfigIOchannelAsOutput(1); /* configure IO 1 as output on chain 0 */
+SetIOchannel(1); /* set IO 1 on chain 0 high */
+
+SelectChain(3);  /* make chain 3 active */
+ConfigIOchannelAsOutput(1); /* configure IO 1 as output on chain 3 */
+SetIOchannel(1); /* set IO 1 on chain 3 high */
+
+ReadIOchannel(1); /* read the status of IO 1 on chain 3 */
+printf("IO 1 on chain 3 = %d\n",IO_matrix[3][1]);
+
+SelectChain(0);  /* make chain 0 active again */
+ReadIOchannel(1); /* read the status of IO 1 on chain 0 */
+/* since IO[] is a pointer to IO_matrix[0][] */
+/* the old style arrays still work and point */
+/* to the first chain                        */
+printf("IO 1 on chain 0 = %d (same as %d)\n",IO_matrix[0][1],IO[1]);
+.....
+
+2.2.4 I2cSendData and I2cReadData.
+----------------------------------
+As from libk8000 version 2.x two general I²C functions are available.
+These can be used to send to, or read from any I²C slave device, like an
+LCD panel that has it's I²C wires connected to a K8000. The 'byte'
+datatype is defined as an 'unsigned char'.
+
+void I2cSendData(byte addr,byte *data,int len)
+void I2cReadData(byte addr,byte *data,int len)
+
+Example:
+.....
+byte str[4];
+byte val;
+
+if(SelectI2CprinterPort(1))
+{
+	printf("Must run as root\n");
+	exit(1);
+}
+I2CBusNotBusy();
+/* Sending the string "text" to an LCD */
+/* panel at address 0x50 on chain 0    */
+str[0]='t';
+str[1]='e';
+str[2]='x';
+str[3]='t';
+I2cSendData(0x50,str,4);
+
+/* set IO's 1-8 on chain 3 high      */
+/* By controlling the K8000 directly */
+/* using I2cSendData and I2cReadData,*/
+/* the IO(_matrix) array will not be */
+/* updated!                          */
+SelectChain(3);  /* make chain 3 active */
+val = 0x00;
+I2cSendData(0x38,&val,1); /* write the value byte to the chip */
+I2cReadData(0x38,&val,1); /* read status into the value byte from the chip */
+printf("IO 1 on chain 3=%d\n",IO_matrix[3][1]); /* WILL NOT BE CORRECT !!  */
+.....
+
+2.2.5 Use K8000 via I2C Kernel Device.
+--------------------------------------
+You can use the I2C Kernel Device to control the K8000.
+Instead of using the 'direct to parallel port' methode which is otherwise used.
+You can not use the chains 1, 2, 3 and 4 with the I2C kernel device.
+
+Before you use the I2C device you must load the correct modules.
+And unload some others.
+Possibly you can do this by running the "k8000-setup-i2c-device" script as ROOT.
+This depends on what modules you have loaded.
+After loading and unloading the right modules you do not need to be ROOT anymore
+to use the K8000.
+
+You can choose between 'Direct to parallel port' or 'I2C Device' at run time from the
+user program.
+
+You select the i2c kernel device by choosing -1 or I2C_DEV as parallel port.
+
+SelectI2CprinterPort(-1);
+or
+SelectI2CprinterPort(I2C_DEV);
+
+The I2CbusDelay is not needed used when you use the I2C Kernel Device.
+
+After you are done using the K8000 prog, you can restore the modules by
+"k8000-restore-modules".
+If you could use the "k8000-setup-i2c-device" script at least.
+
+
+note : The DecToHex function has not been converted yet (and never will be)
+
+Please send questions, bugs and money to:
+joris@struyve.be http://struyve.mine.nu:8080/pageloader.pl?block=k8000
+hihihi@wanadoo.nl http://home.wanadoo.nl/hihihi/
+ben0it@wanadoo.fr http://perso.wanadoo.fr/2oo2/k8housealarm
+

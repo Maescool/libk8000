@@ -1,0 +1,35 @@
+####### k8000 makefile
+REL = 2.2.0
+
+LD = $(CROSS_COMPILE)ld
+CC = $(CROSS_COMPILE)gcc
+
+KER_DIR=/opt/eldk/usr/src/linux
+
+LDFLAGS = -r -o
+WARN    = -Wall -Wstrict-prototypes
+INCLUDE = -I$(KER_DIR)/include -I$(KER_DIR)/arch/ppc
+CFLAGS  = -O2 -DMODULE -D__KERNEL__ -D__MPC860__ -DEXPORT_SYMTAB -fomit-frame-pointer -fno-strength-reduce ${INCLUDE} ${WARN}
+
+SOURCES = k8000.c
+OBJECTS = k8000.o
+
+TARGET = mod_k8000.o
+####### Implicit rules
+
+.SUFFIXES: .cpp .cxx .cc .C .c .pc
+
+.c.o:
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+####### Build rules
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(LD) $(LDFLAGS) $(TARGET) $(OBJECTS)
+
+clean:
+	rm -fr $(OBJECTS) $(TARGET)
+	@cd ./examples; make clean
+

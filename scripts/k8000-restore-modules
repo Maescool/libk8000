@@ -1,0 +1,16 @@
+#!/bin/bash
+# By hihihi@wanadoo.nl
+# Feb 1 2002 01:05  And forget about the seconds :-)
+#
+# For the Velleman K8000 and the i2c kernel device.
+#
+# Script to restore the printermodules after the setup-velleman-i2c-device 
+# script
+#
+/sbin/rmmod i2c-velleman
+/sbin/rmmod i2c-dev
+/sbin/modprobe parport
+/sbin/modprobe parport_pc
+/sbin/modprobe lp
+
+

@@ -1,0 +1,69 @@
+Release 2.2.0
+  - Protocol routines rewrite.
+  - Slave ack is now read.
+  - SetDebug and SetPrintError functions to enable or disable debug or error
+    output.
+  - The same source can build a i386 and mpc860 kernel module.
+  - SelectI2CprinterPort is extended with printerport 3. This is a parallel port
+    on a pci card with base address 0xD000 (Thanks Philippe Martinole).
+
+Release 2.1.2
+  - Device and direct port interface functions are now function pointers to avoid
+    an extra function and switch.
+  - k8000.h header fixes to link C++ against the C libk8000.a. libk8000++.a does
+    not exist anymore.
+
+Release 2.1.1
+  - Compile bugfix in k8000.h
+
+Release 2.1.0
+  - Introduced mutexes to serialize parallel port access
+
+Release 2.0.1
+  - Fixed a dumb bug only visible on big endian platforms.
+
+Release 2.0.0
+  - Added examples directory with some simple C and C++ examples
+  - The scripts directory contains setup scripts for the /dev interface
+
+Release 1.99.2
+  - The user can now select the 'direct' or 'via i2c kernel device' methode at run time
+    of his/her program.
+    No more need to choose at compile time.
+    The -lk8000dev(++) compiler options are not used anymore.
+
+Release 1.99.1
+  - Added choice to use I2C kernel device access to k8000 instead of direct printer port
+    access.
+    This is done at link time. By choosing -lk8000(++) for direct access to printerport.
+    Or -lk8000dev(++) for access via I2C kernel device.
+    Added by hihihi@wanadoo.nl after Heimo Schoen showed how to do it for IO channels in
+    the 'Velleman K8000 & Linux Howto' http://howto.htlw16.ac.at/k8000-howto.html
+
+  - Added range checking for DA and DAC channels.
+  - Minor bugs fixed.
+
+Release 1.99
+  - Complete core code rewrite to make the source more readable.
+  - Fix automatic permission setting bug.
+  - Added support for 5 master-slave chains. Those 5 chains use
+	  different pins on the parallel port, see the README for
+	  more details.
+  - Added 2 generic I²C functions: I2cSendData and I2cReadData
+	  that can be used to send some data to other I²C devices than a
+	  Velleman K8000 (like LCD panels, Eeproms,..).
+  - No more separate tarballs for C and C++ libraries. The 2 flavours
+	  are made from one source. The same is true for the rpm's, only
+	  one rpm for both flavours.
+  - Ditched the C++ header (k8000++.h) since it's exactly the same
+	  as k8000.h
+
+Release 1.1.0
+  - SelectI2CprinterPort function now sets the
+	  permissions on the desired printer port, and
+	  returns non zero uppon failure
+  - Added SetAutoPerm function to disable the
+	  automatic permission setting in SelectI2CprinterPort
+
+Release 1.0.0
+  - Initial release

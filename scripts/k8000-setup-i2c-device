@@ -1,0 +1,62 @@
+#!/bin/bash
+#
+# By hihihi#wanadoo.nl
+# Jan 31 2002
+# A variation on the ./velle script of Heimo Schoen.
+#
+# Script to create a /dev/velleman and setup control of the Velleman K8000 via 
+# i2c kernel device.
+#
+# Finds the first "minor" for the Velleman K8000 i2c device.
+# and make the /dev/velleman i2c device
+#
+echo
+echo "Make parallel port free"
+/sbin/rmmod lp
+/sbin/rmmod parport_pc
+/sbin/rmmod parport
+
+echo "Load i2c driver modules"
+modprobe i2c-velleman
+modprobe i2c-dev
+
+echo 
+echo "See if there is a /dev/velleman. If not, make a /dev/velleman :"
+echo 
+if [ -c /dev/velleman ]
+then
+  echo "      Velleman K8000 i2c device /dev/velleman allready exists."
+else
+  echo "    /dev/velleman did not exist. Trying to make one."
+  Filename=/proc/bus/i2c
+  line="not empty yet"
+  echo
+  echo "    Look for I2C devices in /proc/bus/i2c :"
+  echo
+  while [ "$line" != "" ]
+  do
+    read line
+    echo "     " $line
+    if echo "$line" | grep -q "Velleman K8000"
+    then
+      K8000Entry=$line
+    fi
+  done <"$Filename"
+  
+  echo
+  echo "      Found a Velleman K8000 entry:"
+  echo
+  echo "       " $K8000Entry
+  echo
+  
+  K8000Nod=${K8000Entry#i2c-}
+  echo $K8000Nod 
+  K8000Nod=`expr match "$K8000Nod" '\([0-9]*[0-9]\)'`
+  echo $K8000Nod
+  
+  cd /dev
+  mknod velleman c 89 $K8000Nod
+  chmod a+rw velleman
+fi  
+echo
+exit 0

@@ -1,0 +1,6 @@
+- To make the chains work with i2c device "i2c-velleman" kernel
+  module needs to be changed.
+- Find a way to make loading and unloading modules for i2c dev easier.
+  Specialy if you have printer and k8000 on one parallel port.
+
+

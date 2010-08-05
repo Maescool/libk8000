@@ -1,0 +1,13 @@
+Credits go to :
+
+- Joris Struyve joris@struyve.be for writing the LIBK8000
+
+- hihihi@wanadoo.nl for adding the 'i2c kernel device' parts.
+  And fixing some minor bugs.
+
+- Heimo Schoen, heimo.schoen@gmx.at for showing how to access the k8000
+  via i2c kernel device in his 'Velleman K8000 & Linux HOWTO'
+  At http://howto.htwl16.ac.at/k8000-howto.html
+
+- Benoît Locher <ben0it@wanadoo.fr> for adding several performance and 
+  C++ improvements
