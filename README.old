@@ -38,7 +38,9 @@ If you intend to use libk8000 from kernel space, you must also build libk8000
 as a kernel module. These makefiles are mot very well tested. You will have to
 modify these to fit your environment.
 
-	$ make
+	$ make -f Makefile-mod-2.4 # build a 2.4 kernel module
+	$ make -f Makefile-mod-2.6 # build a 2.6 kernel module
+	$ make -f Makefile-mod-2.4-mpc860 # build a mpc860 2.4 kernel module
 
 To install the k8000 libraries (in /usr/lib) and header file
 (in /usr/include) do (as root):
@@ -49,12 +51,6 @@ The source tarball includes some demos that show how to use the libk8000. To
 Compile these demos:
 
 	$ make demos
-
-Building Python module
-	$ make python
-
-Installing python module
-	$ python setup.py install
 
 2. Use the libraries.
 =====================
@@ -73,12 +69,6 @@ optimizer option.
 Two functions are provided to enable or disable errors and debug output.
 SetDebug(int) will enable or disable debug output. SetPrintError(int) 
 enables or disables the output of errors to stderr.
-
-In Python you load the module in the source like this
-
-....
-import k8000
-....
 
 2.2 Extentions to the Velleman supplied library.
 ------------------------------------------------
