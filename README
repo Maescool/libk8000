@@ -15,6 +15,9 @@
 ##  on the newer linux versions. 					##
 ##  Pieter Maes - <maescool@gmail.com>					##
 ##									##
+##	The original sources and information i obtained are from:	##
+##		- http://www.lawick.nl/tab_K8000			##
+##		- http://struyve.mine.nu:8080/index.php?block=k8000	##
 ##########################################################################
 
 These are the sources to build a Linux C library that provides
@@ -262,9 +265,9 @@ printf("IO 1 on chain 0 = %d (same as %d)\n",IO_matrix[0][1],IO[1]);
 
 2.2.4 I2cSendData and I2cReadData.
 ----------------------------------
-As from libk8000 version 2.x two general I²C functions are available.
-These can be used to send to, or read from any I²C slave device, like an
-LCD panel that has it's I²C wires connected to a K8000. The 'byte'
+As from libk8000 version 2.x two general Iï¿½C functions are available.
+These can be used to send to, or read from any Iï¿½C slave device, like an
+LCD panel that has it's Iï¿½C wires connected to a K8000. The 'byte'
 datatype is defined as an 'unsigned char'.
 
 void I2cSendData(byte addr,byte *data,int len)
