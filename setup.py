@@ -7,7 +7,6 @@
 
 from distutils.core import setup
 from distutils.extension import Extension
-from pyk8000 import VERSION
 import sys, glob, re, os
 
 # Check for Python < 2.2
@@ -38,7 +37,7 @@ py_version='python%d.%d' % (sys.version_info[0],sys.version_info[1])
 incl_dir = [ os.path.join(sys.prefix,'include',py_version), os.curdir ]
 
 setup(name='pyk8000',
-      version=VERSION,
+      version='0.1',
       description=short,
       long_description=long,
       classifiers=classifiers,
