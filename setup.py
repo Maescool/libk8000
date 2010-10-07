@@ -32,7 +32,7 @@ classifiers = [
     'Natural Language :: English',
     'Operating System :: POSIX :: Linux',
     'Programming Language :: Python',
-    'Topic :: Input/outpur :: Driver' ]
+    'Topic :: Input/output :: Driver' ]
 py_version='python%d.%d' % (sys.version_info[0],sys.version_info[1])
 incl_dir = [ os.path.join(sys.prefix,'include',py_version), os.curdir ]
 
